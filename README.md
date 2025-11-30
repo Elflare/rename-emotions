@@ -67,6 +67,8 @@ uv run rename_emotions.py
 
 <a id="english"></a>
 
+---
+
 ## English Version
 
 A Python script that uses AI vision models to batch rename image files based on their content.
