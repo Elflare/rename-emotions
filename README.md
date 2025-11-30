@@ -26,8 +26,8 @@
 1.  **克隆仓库:**
 
     ```bash
-    git clone https://github.com/Elflare/rename-emojis.git
-    cd rename-emojis
+    git clone https://github.com/Elflare/rename-emotions.git
+    cd rename-emotions
     ```
 
 2.  **安装依赖:**
@@ -91,8 +91,8 @@ A Python script that uses AI vision models to batch rename image files based on 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/Elflare/rename-emojis.git
-    cd rename-emojis
+    git clone https://github.com/Elflare/rename-emotions.git
+    cd rename-emotions
     ```
 
 2.  **Install dependencies:**
@@ -120,7 +120,7 @@ A Python script that uses AI vision models to batch rename image files based on 
 | **concurrent_requests** | `2`                                                                                                                                                                                                                                                                                                                                                              | Number of concurrent image processing tasks, adjust based on API rate limits |
 | **retry_delay**         | `30`                                                                                                                                                                                                                                                                                                                                                             | Delay in seconds when hitting API rate limits (429)                          |
 | **proxy_url**           | `http://127.0.0.1:7890`                                                                                                                                                                                                                                                                                                                                          | (Optional) Network proxy address                                             |
-| **prompt**              | `You are an emoji naming assistant. Please carefully observe the emotion expressed in this image and summarize it with a 2 to 5 word English phrase for use as a file name. Requirements: 1. English only. 2. No punctuation. 3. No numbering. 4. Only one result. 5. Separate multiple words with underscores. (e.g.: laughing_hard, deep_thought, happy_face)` | Prompt sent to the large language model                                      |
+| **prompt**              | `You are an emotion naming assistant. Please carefully observe the emotion expressed in this image and summarize it with a 2 to 5 word English phrase for use as a file name. Requirements: 1. English only. 2. No punctuation. 3. No numbering. 4. Only one result. 5. Separate multiple words with underscores. (e.g.: laughing_hard, deep_thought, happy_face)` | Prompt sent to the large language model                                      |
 
 ### Usage
 
