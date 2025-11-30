@@ -1,0 +1,60 @@
+# ==========================================
+# AI Image Renamer Configuration / 配置文件
+# ==========================================
+# Note: All values here can be overridden by the .env file.
+# 注意：这里的配置均可被 .env 文件中的同名变量覆盖。
+
+# ------------------------------------------
+# API Settings / API 设置
+# ------------------------------------------
+
+# The base URL for the API request.
+# API 的基础地址。
+# Examples:
+# - OpenAI: "https://api.openai.com/v1"
+# - DeepSeek: "https://api.deepseek.com"
+# - Google (via adapter): "https://generativelanguage.googleapis.com/v1beta/openai"
+api_base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+# The name of the AI model to use.
+# 使用的模型名称。
+model_name = "qwen3-vl-plus"
+
+# The maximum number of tokens to generate. Higher values prevent truncated responses.
+# 最大生成的 Token 数。数值太小会导致长回复被截断（报错 finish_reason: length）。
+max_tokens = 2048
+
+# Optional proxy URL (http/https). Leave empty if not needed.
+# 代理地址。如果不需要代理请留空或删除此行。
+# Example: "http://127.0.0.1:7890"
+proxy_url = ""
+
+# ------------------------------------------
+# Execution Settings / 运行设置
+# ------------------------------------------
+
+# Number of concurrent API requests.
+# 并发请求数量。
+# Higher values are faster but risk hitting rate limits (429 errors).
+# 数值越高速度越快，但更容易触发 API 速率限制。
+concurrent_requests = 2
+
+# Seconds to wait before retrying after hitting a rate limit (429 error).
+# 触发速率限制后等待的秒数。
+retry_delay = 30
+
+# ------------------------------------------
+# File Settings / 文件设置
+# ------------------------------------------
+
+# The directory containing images to rename.
+# 需要处理的图片目录路径。
+# Supports absolute path (e.g., "E:/photos") or relative path (e.g., "./images").
+image_directory = "./emotions"
+
+# List of image extensions to process.
+# 支持处理的文件后缀列表。
+supported_extensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"]
+
+# prompt
+prompt = "你是一个表情包命名助手。请仔细观察这张图片所表达的情感，用2到5个字的中文短语概括其情感，用于作为文件名。要求：1. 只要中文。2. 不要标点符号。3. 不要序号。4. 只要一个结果。（如：大笑、思考）"
