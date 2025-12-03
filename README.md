@@ -65,6 +65,24 @@
 uv run rename_emotions.py
 ```
 
+#### 命令行参数 (更高优先级)
+
+你也可以通过命令行参数直接指定图片目录，这将覆盖 `config.toml` 中的设置。
+
+- **方式一：使用标志**
+  ```bash
+  # 使用 --dir
+  uv run rename_emotions.py --dir /path/to/your/images
+
+  # 或者使用 -d
+  uv run rename_emotions.py -d /path/to/your/images
+  ```
+
+- **方式二：直接附加路径**
+  ```bash
+  uv run rename_emotions.py /path/to/your/images
+  ```
+
 <a id="english"></a>
 
 ---
@@ -129,3 +147,21 @@ Run the script directly using `uv run`, which automatically uses the virtual env
 ```bash
 uv run rename_emotions.py
 ```
+
+#### Command-Line Arguments (Higher Priority)
+
+You can also specify the image directory directly via command-line arguments, which will override the settings in `config.toml`.
+
+- **Method 1: Using Flags**
+  ```bash
+  # Using --dir
+  uv run rename_emotions.py --dir /path/to/your/images
+
+  # Or using -d
+  uv run rename_emotions.py -d /path/to/your/images
+  ```
+
+- **Method 2: Appending Path Directly**
+  ```bash
+  uv run rename_emotions.py /path/to/your/images
+  ```
