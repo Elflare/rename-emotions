@@ -4,8 +4,9 @@ import mimetypes
 import os
 import re
 import sys
+import argparse  # [新增] 引入参数解析库
 from pathlib import Path
-from typing import Optional, Dict, TypeVar, Callable, Any
+from typing import Optional, Dict, TypeVar
 
 import aiohttp
 from dotenv import load_dotenv
@@ -252,13 +253,45 @@ def rename_file(original_path: Path, description: str) -> bool:
 
 # --- 5. 主流程 ---
 async def main():
+    # --- [修改] 命令行参数解析 ---
+    parser = argparse.ArgumentParser(description="AI 表情包重命名工具")
+    
+    # 支持 -d 或 --dir 参数
+    parser.add_argument(
+        "-d", "--dir",
+        type=Path,
+        help="指定图片目录 (Flag方式，例如: -d D:\\images)"
+    )
+    
+    # 支持直接输入路径 (位置参数)
+    parser.add_argument(
+        "input_path", 
+        nargs="?", 
+        type=Path, 
+        help="指定图片目录 (直接输入，例如: D:\\images)"
+    )
+
+    args = parser.parse_args()
+
+    # 优先级逻辑：
+    # 1. 命令行 -d / --dir
+    # 2. 命令行 直接路径
+    # 3. 配置文件中的 image_directory
+    if args.dir:
+        directory = args.dir
+    elif args.input_path:
+        directory = args.input_path
+    else:
+        directory = CONFIG["image_directory"]
+    # -----------------------------
+
     if not CONFIG["api_key"]:
         print("🔴 错误: API_KEY 未配置。")
         return
 
-    directory = CONFIG["image_directory"]
+    # 检查目录是否存在
     if not directory.exists():
-        print(f"� 错误: 目录 '{directory}' 不存在。")
+        print(f"🔴 错误: 目录 '{directory}' 不存在。")
         return
 
     print(f"📂 扫描目录: {directory.resolve()}")

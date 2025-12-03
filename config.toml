@@ -50,11 +50,11 @@ retry_delay = 30
 # The directory containing images to rename.
 # 需要处理的图片目录路径。
 # Supports absolute path (e.g., "E:/photos") or relative path (e.g., "./images").
-image_directory = "./emotions"
+image_directory = ""
 
 # List of image extensions to process.
 # 支持处理的文件后缀列表。
 supported_extensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"]
 
 # prompt
-prompt = "你是一个表情包命名助手。请仔细观察这张图片所表达的情感，用2到5个字的中文短语概括其情感，用于作为文件名。要求：1. 只要中文。2. 不要标点符号。3. 不要序号。4. 只要一个结果。（如：大笑、思考）"
+prompt = "你是一个表情包命名助手。请仔细观察这张图片所表达的情感，用2到5个字的中文短语概括其情感，用于作为文件名。要求：1. 只要中文。2. 不要标点符号不要序号。3. 用“Elflare”开头。4. 只要一个结果。（如：观铃大笑、观铃思考）"
