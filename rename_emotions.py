@@ -24,6 +24,10 @@ PROMPTS_DIR = Path("prompts")
 LOCAL_PROMPTS_DIR = Path("prompts.local")
 DEFAULT_LANGUAGE = "en"
 SUPPORTED_LANGUAGES = {"zh", "en"}
+ENV_VAR_MAP = {
+    "api_key": "API_KEY",
+    "proxy_url": "PROXY_URL",
+}
 
 MESSAGES = {
     "zh": {
@@ -227,7 +231,8 @@ def build_runtime_config():
     merged_config = {**base_config, **local_config}
 
     def get_val(key: str, default=None, cast=str):
-        env_val = os.getenv(key.upper())
+        env_name = ENV_VAR_MAP.get(key)
+        env_val = os.getenv(env_name) if env_name else None
         val = env_val if env_val is not None else merged_config.get(key, default)
         try:
             return cast(val) if val is not None else None

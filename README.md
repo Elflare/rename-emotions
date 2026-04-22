@@ -25,7 +25,7 @@
 你自己的本地覆盖配置，已被 `.gitignore` 忽略，不会被提交。
 
 3. `.env`
-敏感信息配置，比如 `API_KEY`，已被 `.gitignore` 忽略，不会被提交。
+只放敏感信息，比如 `API_KEY`，已被 `.gitignore` 忽略，不会被提交。
 
 4. 命令行参数
 优先级最高。
@@ -33,7 +33,7 @@
 实际优先级：
 
 ```text
-命令行参数 > .env > config.local.toml > config.toml
+命令行参数 > config.local.toml > config.toml
 ```
 
 ### Prompt 结构
@@ -80,6 +80,14 @@ current_prompt_file = "prompts.local/image.txt"
 ```env
 API_KEY="your_api_key_here"
 ```
+
+说明：
+
+- `.env` 只用于 `API_KEY`
+- `PROXY_URL` 也可放 `.env`
+- 当前代码中，只有 `API_KEY` 和 `PROXY_URL` 会从 `.env` 读取
+- 其他普通配置不要放 `.env`
+- 普通配置统一写在 `config.toml` 或 `config.local.toml`
 
 ### 语言
 
@@ -144,6 +152,7 @@ uv run rename_emotions.py --prompt-file prompts.local/image.txt
 但仍然有一条硬规则：
 
 - 不要把密钥写进 `config.toml`
+- 不要把密钥写进 `config.local.toml`
 - 不要把私人 prompt 写进 `prompts/`
 
 ## English
@@ -169,7 +178,7 @@ Shared default config that is safe to commit.
 Your private local overrides. This file is ignored by Git.
 
 3. `.env`
-Sensitive values such as `API_KEY`. This file is ignored by Git.
+Sensitive values only, such as `API_KEY`. This file is ignored by Git.
 
 4. Command-line arguments
 Highest priority.
@@ -177,7 +186,7 @@ Highest priority.
 Priority order:
 
 ```text
-command line > .env > config.local.toml > config.toml
+command line > config.local.toml > config.toml
 ```
 
 ### Prompt Layout
@@ -224,6 +233,14 @@ Example `.env`:
 ```env
 API_KEY="your_api_key_here"
 ```
+
+Notes:
+
+- `.env` is only for `API_KEY`
+- `PROXY_URL` may also be stored in `.env`
+- In the current implementation, only `API_KEY` and `PROXY_URL` are read from `.env`
+- Do not put normal runtime settings into `.env`
+- Keep normal settings in `config.toml` or `config.local.toml`
 
 ### Language
 
@@ -288,4 +305,5 @@ So the following personal data stays local by default:
 Still, keep these rules:
 
 - Do not put secrets into `config.toml`
+- Do not put secrets into `config.local.toml`
 - Do not put private prompts into `prompts/`
