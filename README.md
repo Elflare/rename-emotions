@@ -1,167 +1,291 @@
-# AI Image Renamer (AI 图片重命名工具)
+# AI Image Renamer
 
-[中文](#chinese) | [English](#english)
+[中文](#中文) | [English](#english)
 
-<a id="chinese"></a>
+## 中文
 
-## 中文版
-
-一个 Python 脚本，可根据图片内容使用 AI 视觉模型批量重命名图片文件。
+一个使用 AI 视觉模型批量重命名图片文件的 Python 脚本。
 
 ### 功能
 
-- **通用识别**: 可重命名任意图片文件 (`.png`, `.jpg`, `.jpeg`, `.webp` 等)。
-- **AI 驱动**: 可接入任意兼容 OpenAI 格式的视觉模型（如 GPT-4o, Gemini, DeepSeek, Claude 等）进行重命名。
-- **高度可配置**: 所有参数均可通过 `config.toml` 或 `.env` 文件灵活配置。
-- **高效稳定**: 支持并发处理，并内置稳健的 API 速率限制处理与重试机制。
+- 支持常见图片格式批量重命名
+- 兼容 OpenAI 风格视觉接口
+- 支持中英文界面输出
+- 支持公开默认配置与本地私有配置分层
+- 支持 profile / prompt 文件切换
 
-### 环境要求
+### 配置结构
 
-- [uv](https://github.com/astral-sh/uv) (推荐)
-- Python 3.8+ (如果使用 uv，它会自动帮你安装和管理合适的 Python 版本)
-- 一个 AI 视觉模型的 API 密钥。
+项目现在采用四层配置：
 
-### 安装与配置
+1. `config.toml`
+项目默认配置，适合提交到 GitHub。
 
-1.  **克隆仓库:**
+2. `config.local.toml`
+你自己的本地覆盖配置，已被 `.gitignore` 忽略，不会被提交。
 
-    ```bash
-    git clone https://github.com/Elflare/rename-emotions.git
-    cd rename-emotions
-    ```
+3. `.env`
+敏感信息配置，比如 `API_KEY`，已被 `.gitignore` 忽略，不会被提交。
 
-2.  **安装依赖:**
-    此命令会自动创建虚拟环境并同步所有依赖（基于 `uv.lock`）。
+4. 命令行参数
+优先级最高。
 
-    ```bash
-    uv sync
-    ```
+实际优先级：
 
-3.  **配置:**
-    - 项目的默认配置存储在 `config.toml` 文件中。
-    - **将 `.env.example` 文件复制并重命名为 `.env`**。
-    - 在新的 `.env` 文件中填入你的 `API_KEY`。
-    - 你可以在 `config.toml` 中修改默认设置，也可以在 `.env` 中覆盖它们。
+```text
+命令行参数 > .env > config.local.toml > config.toml
+```
 
-### ⚙️ 配置参数说明 (config.toml)
+### Prompt 结构
 
-| 参数项                  | 默认值示例                                                                                                                                                                                     | 说明                                      |
-| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
-| **api_key**             | (在 .env 中设置)                                                                                                                                                                               | 你的 API 密钥 (必填)                      |
-| **api_base_url**        | `https://api.openai.com/v1`                                                                                                                                                                    | API 基础地址，根据服务商填写              |
-| **model_name**          | `gemini-2.5-flash`                                                                                                                                                                             | 使用的模型名称                            |
-| **max_tokens**          | `2048`                                                                                                                                                                                         | 最大输出长度，过小会导致响应被截断        |
-| **image_directory**     | `./images`                                                                                                                                                                                     | 需要重命名的图片文件夹路径 (支持绝对路径) |
-| **concurrent_requests** | `2`                                                                                                                                                                                            | 同时并发处理的图片数量，根据 API 限频调整 |
-| **retry_delay**         | `30`                                                                                                                                                                                           | 遇到 API 限流 (429) 时等待的秒数          |
-| **proxy_url**           | `http://127.0.0.1:7890`                                                                                                                                                                        | (可选) 网络代理地址                       |
-| **prompt**              | `你是一个表情包命名助手。请仔细观察这张图片所表达的情感，用2到5个字的中文短语概括其情感，用于作为文件名。要求：1. 只要中文。2. 不要标点符号。3. 不要序号。4. 只要一个结果。（如：大笑、思考）` | 发给大模型的 prompt                       |
+- `prompts/`
+仓库公开的默认 prompt，可以提交到 GitHub。
+
+- `prompts.local/`
+你自己的私有 prompt，已被 `.gitignore` 忽略，不会被提交。
+
+profile 查找顺序：
+
+```text
+prompts.local/<profile>.<lang>.txt
+prompts.local/<profile>.txt
+prompts/<profile>.<lang>.txt
+prompts/<profile>.txt
+```
+
+### 安装
+
+```bash
+git clone https://github.com/Elflare/rename-emotions.git
+cd rename-emotions
+uv sync
+```
+
+### 配置
+
+1. 复制 `.env.example` 为 `.env`
+2. 在 `.env` 中填写 `API_KEY`
+3. 按需修改 `config.local.toml`
+
+`config.local.toml` 示例：
+
+```toml
+model_name = "qwen3.5-122b-a10b"
+image_directory = "D:/images"
+current_prompt_file = "prompts.local/image.txt"
+```
+
+`.env` 示例：
+
+```env
+API_KEY="your_api_key_here"
+```
+
+### 语言
+
+- 支持 `zh` 和 `en`
+- 第一次运行时，如果未配置 `language`，脚本会检测系统语言
+- 系统语言是中文则默认写入 `zh`
+- 其他情况默认写入 `en`
+- 检测结果会持久化到 `config.local.toml`
+
+你也可以手动切换：
+
+```bash
+uv run rename_emotions.py --lang zh
+uv run rename_emotions.py --lang en
+```
 
 ### 使用
 
-直接使用 `uv run` 运行脚本，它会自动使用虚拟环境，无需手动激活：
+直接运行：
 
 ```bash
 uv run rename_emotions.py
 ```
 
-#### 命令行参数 (更高优先级)
+指定目录：
 
-你也可以通过命令行参数直接指定图片目录，这将覆盖 `config.toml` 中的设置。
+```bash
+uv run rename_emotions.py --dir D:/images
+uv run rename_emotions.py D:/images
+```
 
-- **方式一：使用标志**
-  ```bash
-  # 使用 --dir
-  uv run rename_emotions.py --dir /path/to/your/images
+切换 profile，并持久化到 `config.local.toml`：
 
-  # 或者使用 -d
-  uv run rename_emotions.py -d /path/to/your/images
-  ```
+```bash
+uv run rename_emotions.py --profile emotion
+uv run rename_emotions.py --profile image
+```
 
-- **方式二：直接附加路径**
-  ```bash
-  uv run rename_emotions.py /path/to/your/images
-  ```
+指定 prompt 文件，并持久化到 `config.local.toml`：
 
-<a id="english"></a>
+```bash
+uv run rename_emotions.py --prompt-file prompts/image.en.txt
+uv run rename_emotions.py --prompt-file prompts.local/image.txt
+```
 
----
+### 防止泄露个人配置
 
-## English Version
+以下内容不会被 push：
 
-A Python script that uses AI vision models to batch rename image files based on their content.
+- `.env`
+- `config.local.toml`
+- `prompts.local/`
+
+因此你的这些内容默认不会上传到 GitHub：
+
+- API Key
+- 本地图片目录
+- 当前选择的 prompt
+- 私人 prompt 内容
+- 个人语言偏好
+
+但仍然有一条硬规则：
+
+- 不要把密钥写进 `config.toml`
+- 不要把私人 prompt 写进 `prompts/`
+
+## English
+
+A Python script that uses AI vision models to batch rename image files.
 
 ### Features
 
-- **Universal Recognition**: Can rename any image file (`.png`, `.jpg`, `.jpeg`, `.webp`, etc.).
-- **AI-Powered**: Compatible with any OpenAI-format vision models (such as GPT-4o, Gemini, DeepSeek, Claude, etc.) for renaming.
-- **Highly Configurable**: All parameters can be flexibly configured via `config.toml` or `.env` files.
-- **Efficient and Stable**: Supports concurrent processing with built-in robust API rate limit handling and retry mechanisms.
+- Batch rename common image formats
+- Works with OpenAI-style vision APIs
+- Bilingual CLI output in Chinese and English
+- Layered shared and local configuration
+- Switchable profiles and prompt files
 
-### Requirements
+### Configuration Layout
 
-- [uv](https://github.com/astral-sh/uv) (Recommended)
-- Python 3.8+ (If using uv, it will automatically install and manage the appropriate Python version for you)
-- An API key for an AI vision model.
+The project now uses four layers:
 
-### Installation & Configuration
+1. `config.toml`
+Shared default config that is safe to commit.
 
-1.  **Clone the repository:**
+2. `config.local.toml`
+Your private local overrides. This file is ignored by Git.
 
-    ```bash
-    git clone https://github.com/Elflare/rename-emotions.git
-    cd rename-emotions
-    ```
+3. `.env`
+Sensitive values such as `API_KEY`. This file is ignored by Git.
 
-2.  **Install dependencies:**
-    This command will automatically create a virtual environment and sync all dependencies (based on `uv.lock`).
+4. Command-line arguments
+Highest priority.
 
-    ```bash
-    uv sync
-    ```
+Priority order:
 
-3.  **Configuration:**
-    - The project's default configuration is stored in the `config.toml` file.
-    - **Copy the `.env.example` file and rename it to `.env`**.
-    - Fill in your `API_KEY` in the new `.env` file.
-    - You can modify the default settings in `config.toml` or override them in `.env`.
+```text
+command line > .env > config.local.toml > config.toml
+```
 
-### ⚙️ Configuration Parameters (config.toml)
+### Prompt Layout
 
-| Parameter               | Default Example                                                                                                                                                                                                                                                                                                                                                  | Description                                                                  |
-| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| **api_key**             | (Set in .env)                                                                                                                                                                                                                                                                                                                                                    | Your API key (Required)                                                      |
-| **api_base_url**        | `https://api.openai.com/v1`                                                                                                                                                                                                                                                                                                                                      | API base URL, fill according to your provider                                |
-| **model_name**          | `gemini-2.5-flash`                                                                                                                                                                                                                                                                                                                                               | Model name to use                                                            |
-| **max_tokens**          | `2048`                                                                                                                                                                                                                                                                                                                                                           | Maximum output length                                                        |
-| **image_directory**     | `./images`                                                                                                                                                                                                                                                                                                                                                       | Path to the image folder to rename (Supports absolute path)                  |
-| **concurrent_requests** | `2`                                                                                                                                                                                                                                                                                                                                                              | Number of concurrent image processing tasks, adjust based on API rate limits |
-| **retry_delay**         | `30`                                                                                                                                                                                                                                                                                                                                                             | Delay in seconds when hitting API rate limits (429)                          |
-| **proxy_url**           | `http://127.0.0.1:7890`                                                                                                                                                                                                                                                                                                                                          | (Optional) Network proxy address                                             |
-| **prompt**              | `You are an emotion naming assistant. Please carefully observe the emotion expressed in this image and summarize it with a 2 to 5 word English phrase for use as a file name. Requirements: 1. English only. 2. No punctuation. 3. No numbering. 4. Only one result. 5. Separate multiple words with underscores. (e.g.: laughing_hard, deep_thought, happy_face)` | Prompt sent to the large language model                                      |
+- `prompts/`
+Public default prompts that can be committed.
+
+- `prompts.local/`
+Your private prompts. This directory is ignored by Git.
+
+Profile lookup order:
+
+```text
+prompts.local/<profile>.<lang>.txt
+prompts.local/<profile>.txt
+prompts/<profile>.<lang>.txt
+prompts/<profile>.txt
+```
+
+### Install
+
+```bash
+git clone https://github.com/Elflare/rename-emotions.git
+cd rename-emotions
+uv sync
+```
+
+### Configuration
+
+1. Copy `.env.example` to `.env`
+2. Put your `API_KEY` into `.env`
+3. Adjust `config.local.toml` as needed
+
+Example `config.local.toml`:
+
+```toml
+model_name = "qwen3.5-122b-a10b"
+image_directory = "D:/images"
+current_prompt_file = "prompts.local/image.txt"
+```
+
+Example `.env`:
+
+```env
+API_KEY="your_api_key_here"
+```
+
+### Language
+
+- Supported values: `zh` and `en`
+- On first run, if `language` is not configured, the script detects the system language
+- Chinese systems default to `zh`
+- Everything else defaults to `en`
+- The detected result is persisted into `config.local.toml`
+
+You can also switch manually:
+
+```bash
+uv run rename_emotions.py --lang zh
+uv run rename_emotions.py --lang en
+```
 
 ### Usage
 
-Run the script directly using `uv run`, which automatically uses the virtual environment without manual activation:
+Run directly:
 
 ```bash
 uv run rename_emotions.py
 ```
 
-#### Command-Line Arguments (Higher Priority)
+Specify a directory:
 
-You can also specify the image directory directly via command-line arguments, which will override the settings in `config.toml`.
+```bash
+uv run rename_emotions.py --dir D:/images
+uv run rename_emotions.py D:/images
+```
 
-- **Method 1: Using Flags**
-  ```bash
-  # Using --dir
-  uv run rename_emotions.py --dir /path/to/your/images
+Switch profile and persist it into `config.local.toml`:
 
-  # Or using -d
-  uv run rename_emotions.py -d /path/to/your/images
-  ```
+```bash
+uv run rename_emotions.py --profile emotion
+uv run rename_emotions.py --profile image
+```
 
-- **Method 2: Appending Path Directly**
-  ```bash
-  uv run rename_emotions.py /path/to/your/images
-  ```
+Use a prompt file and persist it into `config.local.toml`:
+
+```bash
+uv run rename_emotions.py --prompt-file prompts/image.en.txt
+uv run rename_emotions.py --prompt-file prompts.local/image.txt
+```
+
+### Prevent Leaks
+
+These paths will not be pushed:
+
+- `.env`
+- `config.local.toml`
+- `prompts.local/`
+
+So the following personal data stays local by default:
+
+- API keys
+- Local image directories
+- Current prompt selection
+- Private prompt content
+- Personal language preference
+
+Still, keep these rules:
+
+- Do not put secrets into `config.toml`
+- Do not put private prompts into `prompts/`
