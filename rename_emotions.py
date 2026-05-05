@@ -60,7 +60,6 @@ MESSAGES = {
         "prompt_switched": "已切换并持久化到 config.local.toml 的 {label}: {path}",
         "persist_failed": "已切换 {label}，但未能写回 config.local.toml: {error}",
         "scan_directory": "扫描目录: {directory}",
-        "current_language": "当前界面语言: {lang}",
         "current_prompt": "当前 prompt: {source}",
         "files_found": "发现 {count} 个文件。准备处理...",
         "processing": "正在分析: {name}",
@@ -106,7 +105,6 @@ MESSAGES = {
         "prompt_switched": "Switched and persisted {label} to config.local.toml: {path}",
         "persist_failed": "Switched {label}, but failed to write config.local.toml: {error}",
         "scan_directory": "Scanning directory: {directory}",
-        "current_language": "Current UI language: {lang}",
         "current_prompt": "Current prompt: {source}",
         "files_found": "Found {count} files. Starting...",
         "processing": "Processing: {name}",
@@ -547,7 +545,6 @@ async def main():
 
     lang_label = t(f"lang_{CONFIG['language']}")
     print(f"📂 {t('scan_directory', directory=directory.resolve())}")
-    print(f"🌐 {t('current_language', lang=lang_label)}")
     print(f"🧠 {t('current_prompt', source=CONFIG['prompt_source'])}")
 
     files = [
