@@ -6,6 +6,7 @@ import mimetypes
 import os
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -63,6 +64,7 @@ MESSAGES = {
         "current_prompt": "当前 prompt: {source}",
         "files_found": "发现 {count} 个文件。准备处理...",
         "processing": "正在分析: {name}",
+        "processing_done": "处理完成: {name}，耗时 {duration}",
         "rate_limit": "速率限制 {name}. 等待 {seconds} 秒...",
         "rename_success": "重命名成功: {old} -> {new}",
         "rename_unchanged": "名称未变: {name}",
@@ -108,6 +110,7 @@ MESSAGES = {
         "current_prompt": "Current prompt: {source}",
         "files_found": "Found {count} files. Starting...",
         "processing": "Processing: {name}",
+        "processing_done": "Finished: {name}, elapsed {duration}",
         "rate_limit": "Rate limited for {name}. Waiting {seconds} seconds...",
         "rename_success": "Renamed: {old} -> {new}",
         "rename_unchanged": "Name unchanged: {name}",
@@ -357,6 +360,18 @@ def clean_description(text: str) -> Optional[str]:
     return clean_line.strip() or None
 
 
+def format_elapsed(seconds: float) -> str:
+    if seconds < 60:
+        return f"{seconds:.1f}s"
+
+    minutes, seconds = divmod(seconds, 60)
+    if minutes < 60:
+        return f"{int(minutes)}m {seconds:.1f}s"
+
+    hours, minutes = divmod(minutes, 60)
+    return f"{int(hours)}h {int(minutes)}m {seconds:.1f}s"
+
+
 async def process_image(
     session: aiohttp.ClientSession,
     image_path: Path,
@@ -364,6 +379,7 @@ async def process_image(
     stats: Dict[str, int],
 ):
     async with semaphore:
+        started_at = time.perf_counter()
         print(f"⏳ {t('processing', name=image_path.name)}")
 
         try:
@@ -469,6 +485,9 @@ async def process_image(
         except Exception as e:
             print(f"💀 {t('error_fatal', name=image_path.name, error=e)}")
             stats["fail"] += 1
+        finally:
+            elapsed = format_elapsed(time.perf_counter() - started_at)
+            print(f"⏱️ {t('processing_done', name=image_path.name, duration=elapsed)}")
 
 
 def rename_file(original_path: Path, description: str) -> bool:
@@ -543,7 +562,6 @@ async def main():
         print(f"🔴 {t('error_directory_missing', directory=directory)}")
         return
 
-    lang_label = t(f"lang_{CONFIG['language']}")
     print(f"📂 {t('scan_directory', directory=directory.resolve())}")
     print(f"🧠 {t('current_prompt', source=CONFIG['prompt_source'])}")
 
