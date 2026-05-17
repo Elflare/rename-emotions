@@ -133,6 +133,19 @@ uv run rename_emotions.py --prompt-file prompts/image.en.txt
 uv run rename_emotions.py --prompt-file prompts.local/image.txt
 ```
 
+临时直接传入 prompt 内容，仅本次运行生效：
+
+```bash
+uv run rename_emotions.py --prompt-text "请把这张图片命名为简短的中文文件名"
+uv run rename_emotions.py --prompt-text "Describe the image as a concise filename"
+```
+
+说明：
+
+- `--prompt-text` 只影响当前这次运行，不会写入 `config.local.toml`
+- `--profile`、`--prompt-file`、`--prompt-text` 不能同时使用
+
+
 ### 防止泄露个人配置
 
 以下内容不会被 push：
@@ -285,6 +298,19 @@ Use a prompt file and persist it into `config.local.toml`:
 uv run rename_emotions.py --prompt-file prompts/image.en.txt
 uv run rename_emotions.py --prompt-file prompts.local/image.txt
 ```
+
+Temporarily pass prompt content directly for this run only:
+
+```bash
+uv run rename_emotions.py --prompt-text "Please name this image using a short Chinese filename"
+uv run rename_emotions.py --prompt-text "Describe the image as a concise filename"
+```
+
+Notes:
+
+- `--prompt-text` only affects the current run and will not be written to `config.local.toml`
+- `--profile`, `--prompt-file`, and `--prompt-text` cannot be used together
+
 
 ### Prevent Leaks
 

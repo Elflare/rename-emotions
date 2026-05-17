@@ -37,11 +37,13 @@ MESSAGES = {
         "help_input_path": "指定图片目录 (直接输入，例如: D:\\images)",
         "help_profile": "使用某个 profile 的 prompt，并持久化到 config.local.toml",
         "help_prompt_file": "使用指定 prompt 文件，并持久化到 config.local.toml",
+        "help_prompt_text": "临时直接传入 prompt 内容，仅本次运行生效",
         "help_lang": "设置界面语言为 zh 或 en，并持久化到 config.local.toml",
-        "error_profile_prompt_conflict": "--profile 和 --prompt-file 不能同时使用",
+        "error_profile_prompt_conflict": "--profile、--prompt-file 和 --prompt-text 不能同时使用",
         "error_lang_invalid": "错误: 不支持的语言 '{lang}'，只支持 zh 或 en。",
         "error_profile_missing": "错误: profile '{profile}' 不存在。",
         "error_prompt_file_missing": "错误: prompt 文件不存在: {path}",
+        "error_prompt_text_empty": "错误: --prompt-text 不能为空。",
         "error_api_key_missing": "错误: API_KEY 未配置。",
         "error_directory_missing": "错误: 目录 '{directory}' 不存在。",
         "error_no_images": "未找到图片文件。",
@@ -73,6 +75,7 @@ MESSAGES = {
         "report_fail": "失败: {count}",
         "label_profile": "profile {profile}",
         "label_prompt_file": "prompt 文件",
+        "label_prompt_text": "临时 prompt 内容",
         "label_language": "界面语言",
         "lang_zh": "中文",
         "lang_en": "英文",
@@ -83,11 +86,13 @@ MESSAGES = {
         "help_input_path": "Specify image directory directly (e.g. D:\\images)",
         "help_profile": "Use a profile prompt and persist it into config.local.toml",
         "help_prompt_file": "Use a specific prompt file and persist it into config.local.toml",
+        "help_prompt_text": "Temporarily pass prompt content directly for this run only",
         "help_lang": "Set UI language to zh or en and persist it into config.local.toml",
-        "error_profile_prompt_conflict": "--profile and --prompt-file cannot be used together",
+        "error_profile_prompt_conflict": "--profile, --prompt-file, and --prompt-text cannot be used together",
         "error_lang_invalid": "Error: unsupported language '{lang}'. Only zh and en are supported.",
         "error_profile_missing": "Error: profile '{profile}' does not exist.",
         "error_prompt_file_missing": "Error: prompt file does not exist: {path}",
+        "error_prompt_text_empty": "Error: --prompt-text cannot be empty.",
         "error_api_key_missing": "Error: API_KEY is not configured.",
         "error_directory_missing": "Error: directory '{directory}' does not exist.",
         "error_no_images": "No image files were found.",
@@ -119,6 +124,7 @@ MESSAGES = {
         "report_fail": "Fail: {count}",
         "label_profile": "profile {profile}",
         "label_prompt_file": "prompt file",
+        "label_prompt_text": "temporary prompt text",
         "label_language": "UI language",
         "lang_zh": "Chinese",
         "lang_en": "English",
@@ -340,12 +346,23 @@ def switch_prompt(prompt_path: Path, label: str):
         print(t("persist_failed", label=label, error=e))
 
 
+def switch_prompt_text(prompt_text: str):
+    CONFIG.update(
+        {
+            "current_prompt_file": None,
+            "prompt": prompt_text.strip(),
+            "prompt_source": t("label_prompt_text"),
+        }
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=t("app_description"))
     parser.add_argument("-d", "--dir", type=Path, help=t("help_dir"))
     parser.add_argument("input_path", nargs="?", type=Path, help=t("help_input_path"))
     parser.add_argument("--profile", help=t("help_profile"))
     parser.add_argument("--prompt-file", type=Path, help=t("help_prompt_file"))
+    parser.add_argument("--prompt-text", help=t("help_prompt_text"))
     parser.add_argument("--lang", help=t("help_lang"))
     return parser
 
@@ -531,7 +548,12 @@ async def main():
         parser = build_parser()
         args = parser.parse_args()
 
-    if args.profile and args.prompt_file:
+    prompt_inputs = [
+        bool(args.profile),
+        bool(args.prompt_file),
+        args.prompt_text is not None,
+    ]
+    if sum(prompt_inputs) > 1:
         parser.error(t("error_profile_prompt_conflict"))
 
     if args.profile:
@@ -546,6 +568,11 @@ async def main():
             print(t("error_prompt_file_missing", path=prompt_path))
             return
         switch_prompt(prompt_path, t("label_prompt_file"))
+    elif args.prompt_text is not None:
+        if not args.prompt_text.strip():
+            print(t("error_prompt_text_empty"))
+            return
+        switch_prompt_text(args.prompt_text)
 
     if args.dir:
         directory = args.dir
