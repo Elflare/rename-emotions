@@ -367,10 +367,43 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+_REASONING_TAG_RE = re.compile(
+    r"<\s*(?P<closing>/)?\s*(?:think|thought|thinking|reasoning)\b[^>]*>",
+    re.IGNORECASE,
+)
+
+
+def _strip_reasoning_blocks(text: str) -> str:
+    visible_parts = []
+    cursor = 0
+    depth = 0
+
+    for match in _REASONING_TAG_RE.finditer(text):
+        if depth == 0:
+            visible_parts.append(text[cursor : match.start()])
+
+        tag_text = match.group(0)
+        if match.group("closing"):
+            if depth > 0:
+                depth -= 1
+            if depth == 0:
+                cursor = match.end()
+        elif tag_text.rstrip().endswith("/>"):
+            if depth == 0:
+                cursor = match.end()
+        else:
+            depth += 1
+
+    if depth == 0:
+        visible_parts.append(text[cursor:])
+
+    return "".join(visible_parts)
+
+
 def clean_description(text: str) -> Optional[str]:
     if not text:
         return None
-    text = text.strip().strip("\"'")
+    text = _strip_reasoning_blocks(text).strip().strip("\"'")
     first_line = text.split("\n")[0].strip()
     clean_line = re.sub(r"^\d+[\.\:：\s]*", "", first_line)
     clean_line = re.sub(r"[。 ，,；;：:.]+$", "", clean_line)
