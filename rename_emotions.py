@@ -68,6 +68,7 @@ MESSAGES = {
         "processing": "正在分析: {name}",
         "processing_done": "处理完成: {name}，耗时 {duration}",
         "rate_limit": "速率限制 {name}. 等待 {seconds} 秒...",
+        "retry_api": "API 报错 {status} ({name})，等待 {seconds} 秒后重试（{retry}/2）...",
         "rename_success": "重命名成功: {old} -> {new}",
         "rename_unchanged": "名称未变: {name}",
         "report_title": "统计报告",
@@ -117,6 +118,7 @@ MESSAGES = {
         "processing": "Processing: {name}",
         "processing_done": "Finished: {name}, elapsed {duration}",
         "rate_limit": "Rate limited for {name}. Waiting {seconds} seconds...",
+        "retry_api": "API error {status} ({name}). Waiting {seconds} seconds before retry {retry}/2...",
         "rename_success": "Renamed: {old} -> {new}",
         "rename_unchanged": "Name unchanged: {name}",
         "report_title": "Summary",
@@ -467,6 +469,13 @@ async def process_image(
                             if response.status == 429:
                                 wait_time = CONFIG["retry_delay"] * (2**attempt)
                                 print(f"⚠️ {t('rate_limit', name=image_path.name, seconds=wait_time)}")
+                                await asyncio.sleep(wait_time)
+                                continue
+                            if response.status == 500 and attempt < 2:
+                                wait_time = CONFIG["retry_delay"] * (2**attempt)
+                                print(
+                                    f"⚠️ {t('retry_api', name=image_path.name, status=response.status, seconds=wait_time, retry=attempt + 1)}"
+                                )
                                 await asyncio.sleep(wait_time)
                                 continue
                             if response.status == 401:
